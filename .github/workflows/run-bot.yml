@@ -1,17 +1,14 @@
-name: Run Booking Bot
+name: Run booking bot
 
 on:
   workflow_dispatch:   # allows manual run
-  schedule:
-    - cron: '*/30 * * * *'   # run every 30 minutes (adjust as needed)
+  push:                # also runs when you push code to GitHub
 
 jobs:
-  run:
+  run-bot:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -28,6 +25,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
 
-      - name: Run bot (headless)
+      - name: Run booking bot
         run: |
           python boot.py --headless
