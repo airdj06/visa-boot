@@ -51,9 +51,11 @@ def try_booking():
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
+        time.sleep(2)
         select_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select location')]"))
         )
+        time.sleep(3)
         driver.execute_script("arguments[0].click();", select_btn)
         print("[INFO] Opened consulate selection modal.")
 
@@ -105,7 +107,8 @@ def try_booking():
         name_input = wait.until(EC.presence_of_element_located((By.ID, "label4")))
         name_input.clear()
         name_input.send_keys(USER_DATA["name"])
-
+        
+        time.sleep(1)
         dob_input = wait.until(EC.presence_of_element_located((By.ID, "birthDate")))
         dob_input.clear()
         dob_input.send_keys(USER_DATA["dob"])
@@ -141,6 +144,7 @@ def try_booking():
         consent2 = wait.until(EC.element_to_be_clickable((By.ID, "label13")))
         driver.execute_script("arguments[0].click();", consent2)
 
+        time.sleep(3)
         select_date_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select date')]"))
         )
@@ -173,3 +177,4 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
