@@ -75,7 +75,8 @@ def try_booking():
     except Exception as e:
         print("[ERROR] Could not select consulate:", e)
         return False
-
+        
+    time.sleep(2)
     # STEP 2: Select Visa Type C
     print("[STEP 2] Selecting Visa Type C...")
     try:
@@ -100,7 +101,8 @@ def try_booking():
     except Exception as e:
         print("[WARNING] Could not select Visa Type C:", e)
         return False
-
+        
+    time.sleep(2)
     # STEP 3: Fill Personal Information
     print("[STEP 3] Filling personal details...")
     try:
@@ -151,7 +153,7 @@ def try_booking():
         driver.execute_script("arguments[0].click();", select_date_btn)
         print("[INFO] Clicked 'Select date' button.")
 
-        time.sleep(3)
+        time.sleep(5)
         try:
             driver.find_element(By.XPATH, "//div[contains(text(),'no appointments available')]")
             print("[INFO] No appointments available. Restarting...")
@@ -177,4 +179,5 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
