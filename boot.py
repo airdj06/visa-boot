@@ -155,14 +155,21 @@ def try_booking():
 
         time.sleep(5)
         try:
-            driver.find_element(By.XPATH, "//div[contains(text(),'no appointments available')]")
-            print("[INFO] No appointments available. Restarting...")
-            ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
-            driver.execute_script("arguments[0].click();", ok_btn)
-            return False
+            # Detect if "Select a date" step is active (blue circle)
+            active_step = driver.find_element(By.XPATH, "//a[@id='idopontvalasztas-tab' and contains(@class,'active')]")
+            if active_step:
+                print("[SUCCESS] Appointment page opened! 🚀")
+                return True
         except:
-            print("[SUCCESS] Appointment page opened! 🚀")
-            return True
+            # If not found, assume no appointments (modal will appear)
+            try:
+                no_app_modal = driver.find_element(By.XPATH, "//div[contains(text(),'no appointments available')]")
+                print("[INFO] No appointments available. Restarting...")
+                ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
+                driver.execute_script("arguments[0].click();", ok_btn)
+            except:
+                print("[WARNING] Could not detect appointment modal, but step 2 not active either.")
+            return False
 
     except Exception as e:
         print("[ERROR] Could not fill form:", e)
@@ -179,5 +186,6 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
