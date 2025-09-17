@@ -48,6 +48,16 @@ wait = WebDriverWait(driver, 30)
 # Function: complete booking attempt
 # ---------------------------
 def try_booking():
+
+    # STEP 0: Check if IP is blocked
+    try:
+        blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
+        if blocked_msg:
+            print("[ERROR] Your IP is blocked. Stopping script.")
+            return True  # stop loop
+    except:
+        pass
+        
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
@@ -172,21 +182,11 @@ def try_booking():
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
         except:
-            pass
-
-        #Check if hCaptcha modal appeared
-        try:
             captcha_modal = driver.find_element(By.XPATH, "//div[contains(text(),'hCaptcha has to be checked')]")
             print("[INFO] hCaptcha detected. Refreshing and retrying...")
             ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
-        except:
-            pass
-
-        #If none of the above → unexpected error (maybe IP ban)
-        print("[ERROR] Unknown error, possibly IP blocked. Stopping script.")
-        return True
 
     except Exception as e:
         print("[ERROR] Could not fill form:", e)
@@ -203,6 +203,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
