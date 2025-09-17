@@ -182,10 +182,16 @@ def try_booking():
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
         except:
+            pass:
+        try:
             captcha_modal = driver.find_element(By.XPATH, "//div[contains(text(),'hCaptcha has to be checked')]")
             print("[INFO] hCaptcha detected. Refreshing and retrying...")
             ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
             driver.execute_script("arguments[0].click();", ok_btn)
+            return False
+            
+        except:
+            print("[WARNING] Could not detect appointment modal, but step 2 not active either.")
             return False
 
     except Exception as e:
@@ -203,6 +209,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
