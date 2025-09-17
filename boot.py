@@ -182,7 +182,7 @@ def try_booking():
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
         except:
-            pass:
+            pass
         try:
             captcha_modal = driver.find_element(By.XPATH, "//div[contains(text(),'hCaptcha has to be checked')]")
             print("[INFO] hCaptcha detected. Refreshing and retrying...")
@@ -209,6 +209,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
