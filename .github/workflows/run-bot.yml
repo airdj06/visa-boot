@@ -1,57 +1,49 @@
-name: Run Booking Bot (sequential VM switching)
+name: Run Booking Bot (sequential VMs)
 
 on:
-  workflow_dispatch:   # run manually
-  # you can add schedule if needed, example every 30 mins:
-  # schedule:
-  #   - cron: "*/30 * * * *"
+  workflow_dispatch:
 
 jobs:
   booking:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        attempt: [1,2,3,4,5]   # number of retries (fresh VM each)
-      max-parallel: 1          # run sequentially
-      fail-fast: false         # don't cancel remaining attempts on failure
+        attempt: [1, 2, 3, 4, 5]   # number of fresh-VM attempts
+      max-parallel: 1             # IMPORTANT: run sequentially, not parallel
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install webdriver-manager selenium
 
-      - name: Install Google Chrome
+      - name: Run booking bot
+        id: run-bot
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
+          echo "➡️ Starting attempt ${{ matrix.attempt }}"
+          python boot.py --headless || echo "exit_code=$?" >> $GITHUB_ENV
 
-      - name: Run bot attempt ${{ matrix.attempt }}
-        id: runbot
+      - name: Check result
+        if: always()
         run: |
-          echo ">>> Starting attempt #${{ matrix.attempt }}"
-          python boot.py
-        continue-on-error: true   # don't stop the workflow here
+          code="${{ env.exit_code }}"
+          echo "Exit code was: $code"
 
-      - name: Handle exit code
-        run: |
-          ec=${{ steps.runbot.outcome }}
-          echo ">>> boot.py outcome: $ec"
-          # If appointments found (exit 0) → stop workflow successfully
-          if [ "$ec" = "success" ]; then
-            echo "Appointments found on attempt #${{ matrix.attempt }}. Stop workflow ✅"
+          if [ "$code" = "0" ]; then
+            echo "✅ Success! Stopping workflow."
             exit 0
+          elif [ "$code" = "2" ]; then
+            echo "⚠️ IP blocked. Moving to next VM..."
+            exit 0   # mark as success so next matrix attempt runs
+          else
+            echo "❌ Unexpected exit (shouldn’t happen because boot.py retries internally)."
+            exit 1
           fi
-          # Otherwise → mark neutral, allow next VM attempt
-          echo "No success (IP blocked or captcha). Switching to next VM..."
-          exit 78
