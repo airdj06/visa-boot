@@ -1,13 +1,18 @@
-name: Run Booking Bot
+name: Run Booking Bot (matrix attempts)
 
 on:
-  workflow_dispatch:   # allows manual run
+  workflow_dispatch:
   schedule:
-    - cron: '*/30 * * * *'   # run every 30 minutes (adjust as needed)
+    - cron: '*/30 * * * *'
 
 jobs:
-  run:
+  booking:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        attempt: [1,2,3,4,5]   # number of fresh-VM attempts (adjust)
+      max-parallel: 1         # run attempts sequentially, each on a fresh VM
 
     steps:
       - name: Checkout repository
@@ -26,8 +31,54 @@ jobs:
       - name: Install Google Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y wget unzip
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
 
-      - name: Run bot (headless)
+      - name: Run bot (single attempt)
+        id: runbot
         run: |
-          python boot.py --headless
+          # show attempt number
+          echo "Attempt #${{ matrix.attempt }}"
+          python boot.py --headless || echo "BOT_EXIT_CODE=$?" > exitcode.txt
+          # capture exit code (if python returned non-zero, it's printed in exitcode.txt)
+          if [ -f exitcode.txt ]; then
+            CODE=$(cat exitcode.txt | sed -n 's/.*BOT_EXIT_CODE=\([0-9]*\).*/\1/p')
+            # if sed didn't succeed (older shells), fallback to $?
+            if [ -z "$CODE" ]; then
+              CODE=$?
+            fi
+          else
+            CODE=0
+          fi
+          echo "bot_exit_code=$CODE" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Decide next action
+        if: steps.runbot.outputs.bot_exit_code == '0'
+        run: |
+          echo "Appointment found on attempt #${{ matrix.attempt }}. Calling API to cancel remaining jobs..."
+          # Cancel the current workflow run so other matrix jobs stop
+          curl -s -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel"
+        shell: bash
+
+      - name: Fail job (if IP blocked)
+        if: steps.runbot.outputs.bot_exit_code == '2'
+        run: |
+          echo "IP is blocked for this VM (attempt #${{ matrix.attempt }}). Exiting with failure so workflow moves to next attempt (fresh VM)."
+          exit 1
+
+      - name: Continue to next attempt (no appointments/captcha)
+        if: steps.runbot.outputs.bot_exit_code == '1'
+        run: |
+          echo "No appointments or received captcha. End this job normally with non-zero -> next matrix attempt will run."
+          exit 1
+
+      - name: Success (booked)
+        if: steps.runbot.outputs.bot_exit_code == '0'
+        run: |
+          echo "Success — appointment reached on attempt #${{ matrix.attempt }}. This job will finish successfully."
