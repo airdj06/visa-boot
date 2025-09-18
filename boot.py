@@ -205,13 +205,18 @@ while True:
     try:
         success = try_booking()
         if success is True:
-            break
+            driver.quit()
+            sys.exit(0)  # success → stop script
         else:
             time.sleep(5)
-            driver.refresh()
-            print("[INFO] Page refreshed, retrying...")
-    except SystemExit as e:
-        # clean exit (0=success, 2=blocked IP)
+            if driver.session_id:  # only refresh if driver is still alive
+                driver.refresh()
+                print("[INFO] Page refreshed, retrying...")
+            else:
+                print("[ERROR] Driver session is dead. Exiting...")
+                sys.exit(1)
+    except SystemExit:
+        # pass exit codes back to workflow (0 or 2)
         raise
     except Exception as e:
         print("[FATAL] Unexpected error:", e)
@@ -220,4 +225,6 @@ while True:
         except:
             pass
         sys.exit(1)
+
+
 
