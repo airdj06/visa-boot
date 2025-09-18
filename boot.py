@@ -1,5 +1,3 @@
-# boot.py
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -51,20 +49,19 @@ wait = WebDriverWait(driver, 30)
 # Function: complete booking attempt
 # ---------------------------
 def try_booking():
-
     # STEP 0: Check if IP is blocked
     try:
         blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
         if blocked_msg:
-            print("Error:  Your IP is blocked. Stopping script and switching VM.")
+            print("Error: Your IP is blocked. Stopping script and switching VM.")
             try:
                 driver.quit()
             except:
                 pass
-            sys.exit(2)   # <-- exit cleanly with code 2
+            sys.exit(2)   # hard exit, no more retries
     except:
         pass
-        
+
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
@@ -92,7 +89,7 @@ def try_booking():
     except Exception as e:
         print("[ERROR] Could not select consulate:", e)
         return False
-        
+
     time.sleep(2)
     # STEP 2: Select Visa Type C
     print("[STEP 2] Selecting Visa Type C...")
@@ -118,7 +115,7 @@ def try_booking():
     except Exception as e:
         print("[WARNING] Could not select Visa Type C:", e)
         return False
-        
+
     time.sleep(2)
     # STEP 3: Fill Personal Information
     print("[STEP 3] Filling personal details...")
@@ -126,7 +123,7 @@ def try_booking():
         name_input = wait.until(EC.presence_of_element_located((By.ID, "label4")))
         name_input.clear()
         name_input.send_keys(USER_DATA["name"])
-        
+
         time.sleep(1)
         dob_input = wait.until(EC.presence_of_element_located((By.ID, "birthDate")))
         dob_input.clear()
@@ -172,17 +169,15 @@ def try_booking():
 
         time.sleep(10)
         try:
-            # Detect if "Select a date" step is active (blue circle)
             active_step = driver.find_element(By.XPATH, "//a[@id='idopontvalasztas-tab' and contains(@class,'active')]")
             if active_step:
                 print("[SUCCESS] Appointment page opened! 🚀")
                 time.sleep(50)  # pause so you can handle appointment manually
                 driver.quit()
-                sys.exit(0)   # success
+                sys.exit(0)
         except:
             pass
 
-        # Check if "no appointments" modal appeared
         try:
             no_app_modal = driver.find_element(By.XPATH, "//div[contains(text(),'no appointments available')]")
             print("[INFO] No appointments available. Restarting...")
@@ -192,7 +187,6 @@ def try_booking():
         except:
             pass
 
-        # Check if captcha appeared
         try:
             captcha_modal = driver.find_element(By.XPATH, "//div[contains(text(),'hCaptcha has to be checked')]")
             print("[INFO] hCaptcha detected. Refreshing and retrying...")
@@ -211,11 +205,21 @@ def try_booking():
 # Loop until success or blocked
 # ---------------------------
 while True:
-    success = try_booking()
-    if success is True:
-        break
-    else:
-        time.sleep(5)
-        driver.refresh()
-        print("[INFO] Page refreshed, retrying...")
-
+    try:
+        success = try_booking()
+        if success is True:
+            break
+        else:
+            time.sleep(5)
+            driver.refresh()
+            print("[INFO] Page refreshed, retrying...")
+    except SystemExit as e:
+        # clean exit (0=success, 2=blocked IP)
+        raise
+    except Exception as e:
+        print("[FATAL] Unexpected error:", e)
+        try:
+            driver.quit()
+        except:
+            pass
+        sys.exit(1)
