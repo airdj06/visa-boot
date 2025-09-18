@@ -1,4 +1,4 @@
-name: Run Booking Bot (sequential VMs)
+name: Run Booking Bot
 
 on:
   workflow_dispatch:
