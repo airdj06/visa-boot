@@ -29,7 +29,10 @@ jobs:
         id: run-bot
         run: |
           echo "➡️ Starting attempt ${{ matrix.attempt }}"
-          python boot.py --headless || echo "exit_code=$?" >> $GITHUB_ENV
+          set +e
+          python boot.py --headless
+          echo "exit_code=$?" >> $GITHUB_ENV
+          set -e
 
       - name: Check result
         if: always()
@@ -42,8 +45,7 @@ jobs:
             exit 0
           elif [ "$code" = "2" ]; then
             echo "⚠️ IP blocked. Moving to next VM..."
-            exit 0   # mark as success so next matrix attempt runs
+            exit 0   # continue matrix for next fresh VM
           else
-            echo "❌ Unexpected exit (shouldn’t happen because boot.py retries internally)."
+            echo "❌ Unexpected error inside boot.py"
             exit 1
-          fi
