@@ -56,9 +56,12 @@ def try_booking():
     try:
         blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
         if blocked_msg:
-            print("[ERROR] Your IP is blocked. Stopping script and switching VM.")
-            driver.quit()
-            sys.exit(2)   # exit with code 2 -> workflow switches to next VM
+            print("Error:  Your IP is blocked. Stopping script and switching VM.")
+            try:
+                driver.quit()
+            except:
+                pass
+            sys.exit(2)   # <-- exit cleanly with code 2
     except:
         pass
         
@@ -215,3 +218,4 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
