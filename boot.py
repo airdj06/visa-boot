@@ -21,12 +21,19 @@ USER_DATA = {
 # ---------------------------
 print("[INFO] Starting browser...")
 options = webdriver.ChromeOptions()
-options.add_argument("--log-level=3")  # reduce Chrome noise
-driver = webdriver.Chrome(options=options)
-driver.maximize_window()
+options.add_argument("--log-level=3")      # reduce Chrome noise
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+
+if args.headless:
+    options.add_argument("--headless=new")  # new headless mode
+    options.add_argument("--disable-gpu")
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+driver.set_window_size(1920, 1080)
 driver.get("https://konzinfobooking.mfa.gov.hu/")
 
-wait = WebDriverWait(driver, 60)
+wait = WebDriverWait(driver, 30)
 
 # ---------------------------
 # Function: complete booking attempt
@@ -189,3 +196,4 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
