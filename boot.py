@@ -1,19 +1,19 @@
-from selenium import webdriver
+import time
+import argparse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
-import argparse
+# ---------------------------
+# Optional imports
+# ---------------------------
+from selenium.webdriver.common.keys import Keys
 
 # ---------------------------
 # Parse arguments (so we can run --headless on GitHub Actions)
 # ---------------------------
 parser = argparse.ArgumentParser()
-parser.add_argument("--headless", action="store_true", help="Run Chrome in headless mode")
+parser.add_argument("--headless", action="store_true", help="Run Chrome in headless (stealth) mode")
 args = parser.parse_args()
 
 # ---------------------------
@@ -31,19 +31,29 @@ USER_DATA = {
 # Start browser
 # ---------------------------
 print("[INFO] Starting browser...")
-options = webdriver.ChromeOptions()
-options.add_argument("--log-level=3")      # reduce Chrome noise
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
 
 if args.headless:
-    options.add_argument("--headless=new")  # new headless mode
+    # use undetected-chromedriver for stealth
+    import undetected_chromedriver as uc
+    options = uc.ChromeOptions()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
+    driver = uc.Chrome(options=options, headless=True)
+else:
+    # use normal selenium driver for testing (non-headless)
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from webdriver_manager.chrome import ChromeDriverManager
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options = webdriver.ChromeOptions()
+    options.add_argument("--log-level=3")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
 driver.set_window_size(1920, 1080)
 driver.get("https://konzinfobooking.mfa.gov.hu/")
-
 wait = WebDriverWait(driver, 30)
 
 # ---------------------------
@@ -58,6 +68,7 @@ def try_booking():
             return True  # stop loop
     except:
         pass
+
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
@@ -65,8 +76,6 @@ def try_booking():
         select_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select location')]"))
         )
-
-        time.sleep(3)
         driver.execute_script("arguments[0].click();", select_btn)
         print("[INFO] Opened consulate selection modal.")
 
@@ -98,10 +107,10 @@ def try_booking():
         print("[INFO] Opened application type selection modal.")
         time.sleep(2)
 
-        visa_d_checkbox = wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//label[contains(text(),'Visa application (long term; residence permit -D)')]/preceding::input[1]"))
+        visa_d_label = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//label[contains(text(),'Visa application (long term; residence permit -D)')]"))
         )
-        driver.execute_script("arguments[0].click();", visa_d_checkbox)
+        driver.execute_script("arguments[0].click();", visa_d_label)
         print("[INFO] Visa Type D checkbox selected.")
 
         save_btn = wait.until(
@@ -166,10 +175,8 @@ def try_booking():
         print("[INFO] Clicked 'Select date' button.")
 
         # STEP 4: Check what happened after clicking Select Date
-        # ---------------------------
         time.sleep(10)
         try:
-            #Detect if "Select a date" step is active (blue circle)
             active_step = driver.find_element(By.XPATH, "//a[@id='idopontvalasztas-tab' and contains(@class,'active')]")
             if active_step:
                 print("[SUCCESS] Appointment page opened! 🚀")
@@ -178,7 +185,6 @@ def try_booking():
         except:
             pass
 
-        #Check if "no appointments" modal appeared
         try:
             no_app_modal = driver.find_element(By.XPATH, "//div[contains(text(),'no appointments available')]")
             print("[INFO] No appointments available. Restarting...")
@@ -187,14 +193,13 @@ def try_booking():
             return False
         except:
             pass
-        #Check if hCaptcha modal appeared
+
         try:
             captcha_modal = driver.find_element(By.XPATH, "//div[contains(text(),'hCaptcha has to be checked')]")
             print("[INFO] hCaptcha detected. Refreshing and retrying...")
             ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
-        
         except:
             print("[WARNING] Could not detect appointment modal, but step 2 not active either.")
             return False
@@ -212,10 +217,7 @@ while True:
     if success:
         break
     else:
-        time.sleep(5)
+        wait_time = 60 * 5  # wait 5 minutes to avoid blocking
+        print(f"[INFO] Page refreshed, retrying after {wait_time/60} minutes...")
+        time.sleep(wait_time)
         driver.refresh()
-        print("[INFO] Page refreshed, retrying...")
-
-
-
-
