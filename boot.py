@@ -4,6 +4,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.webdriver.common.keys import Keys
+import argparse
+
+# ---------------------------
+# Parse arguments (so we can run --headless on GitHub Actions)
+# ---------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument("--headless", action="store_true", help="Run Chrome in headless mode")
+args = parser.parse_args()
 
 # ---------------------------
 # Your personal information
@@ -196,4 +204,5 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
