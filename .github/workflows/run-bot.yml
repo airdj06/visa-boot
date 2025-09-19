@@ -1,9 +1,9 @@
 name: Run Booking Bot
 
 on:
-  workflow_dispatch:   # allows manual run
+  workflow_dispatch:
   schedule:
-    - cron: '*/10 * * * *'   # run every 30 minutes (adjust as needed)
+    - cron: '*/10 * * * *'   # run every 10 minutes
 
 jobs:
   run:
@@ -26,8 +26,23 @@ jobs:
       - name: Install Google Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y wget unzip
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
 
       - name: Run bot (headless)
         run: |
           python boot.py --headless
+
+      - name: Send email notification
+        if: failure()   # only when boot.py exits with code 1
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: "alaztn25@gmail.com"
+          password: "alazie4646"
+          subject: "🚀 Appointment Page Opened!"
+          to: "alaztn45@gmail.com"
+          from: "Booking Bot <alaztn25@gmail.com>"
+          body: "The bot just detected that the appointment page is OPEN!"
