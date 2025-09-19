@@ -1,51 +1,33 @@
 name: Run Booking Bot
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # allows manual run
+  schedule:
+    - cron: '*/30 * * * *'   # run every 30 minutes (adjust as needed)
 
 jobs:
-  booking:
+  run:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        attempt: [1, 2, 3, 4, 5]   # number of fresh-VM attempts
-      max-parallel: 1             # IMPORTANT: run sequentially, not parallel
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install webdriver-manager selenium
 
-      - name: Run booking bot
-        id: run-bot
+      - name: Install Google Chrome
         run: |
-          echo "➡️ Starting attempt ${{ matrix.attempt }}"
-          set +e
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Run bot (headless)
+        run: |
           python boot.py --headless
-          echo "exit_code=$?" >> $GITHUB_ENV
-          set -e
-
-      - name: Check result
-        if: always()
-        run: |
-          code="${{ env.exit_code }}"
-          echo "Exit code was: $code"
-
-          if [ "$code" = "0" ]; then
-            echo "✅ Success! Stopping workflow."
-            exit 0
-          elif [ "$code" = "2" ]; then
-            echo "⚠️ IP blocked. Moving to next VM..."
-            exit 0   # continue matrix for next fresh VM
-          else
-            echo "❌ Unexpected error inside boot.py"
-            exit 1
