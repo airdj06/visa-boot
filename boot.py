@@ -50,6 +50,14 @@ wait = WebDriverWait(driver, 30)
 # Function: complete booking attempt
 # ---------------------------
 def try_booking():
+    # STEP 0: Check if IP is blocked
+    try:
+        blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
+        if blocked_msg:
+            print("[ERROR] Your IP is blocked. Stopping script.")
+            return True  # stop loop
+    except:
+        pass
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
@@ -207,6 +215,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
