@@ -72,7 +72,7 @@ def try_booking():
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
     try:
-        time.sleep(2)
+        time.sleep(3)
         select_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select location')]"))
         )
@@ -96,7 +96,7 @@ def try_booking():
         print("[ERROR] Could not select consulate:", e)
         return False
     
-    time.sleep(1)
+    time.sleep(3)
     # STEP 2: Select Visa Type D
     print("[STEP 2] Selecting Visa Type D...")
     try:
@@ -105,7 +105,7 @@ def try_booking():
         )
         driver.execute_script("arguments[0].click();", app_type_btn)
         print("[INFO] Opened application type selection modal.")
-        time.sleep(2)
+        time.sleep(3)
 
         visa_d_label = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//label[contains(text(),'Visa application (long term; residence permit -D)')]"))
@@ -123,7 +123,7 @@ def try_booking():
         print("[WARNING] Could not select Visa Type D:", e)
         return False
     
-    time.sleep(1)
+    time.sleep(3)
     # STEP 3: Fill Personal Information
     print("[STEP 3] Filling personal details...")
     try:
@@ -136,14 +136,17 @@ def try_booking():
         dob_input.clear()
         dob_input.send_keys(USER_DATA["dob"])
 
+        time.sleep(3)
         phone_input = wait.until(EC.presence_of_element_located((By.ID, "label9")))
         phone_input.clear()
         phone_input.send_keys(USER_DATA["phone"])
 
+        time.sleep(3)
         email_input = wait.until(EC.presence_of_element_located((By.ID, "label10")))
         email_input.clear()
         email_input.send_keys(USER_DATA["email"])
 
+        time.sleep(3)
         email2_input = wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[contains(text(),'Re-enter the email address')]/following::input[1]")
@@ -152,6 +155,7 @@ def try_booking():
         email2_input.clear()
         email2_input.send_keys(USER_DATA["email"])
 
+        time.sleep(3)
         passport_input = wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[contains(text(),'Passport number')]/following::input[1]")
@@ -161,13 +165,15 @@ def try_booking():
         passport_input.send_keys(USER_DATA["passport"])
         driver.execute_script("arguments[0].blur();", passport_input)
 
+        time.sleep(3)
         consent1 = wait.until(EC.element_to_be_clickable((By.ID, "slabel13")))
         driver.execute_script("arguments[0].click();", consent1)
-
+        
+        time.sleep(1)
         consent2 = wait.until(EC.element_to_be_clickable((By.ID, "label13")))
         driver.execute_script("arguments[0].click();", consent2)
         
-        time.sleep(1)
+        time.sleep(5)
         select_date_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select date')]"))
         )
@@ -221,3 +227,4 @@ while True:
         print(f"[INFO] Page refreshed, retrying after {wait_time/60} minutes...")
         time.sleep(wait_time)
         driver.refresh()
+
