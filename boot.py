@@ -189,15 +189,8 @@ def try_booking():
             ok_btn = driver.find_element(By.XPATH, "//button[contains(text(),'OK')]")
             driver.execute_script("arguments[0].click();", ok_btn)
             return False
+            
         except:
-            pass
-        try:
-            blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
-            if blocked_msg:
-            print("[ERROR] Your IP is blocked. Stopping script.")
-            return False
-        except:
-            pass
             print("[WARNING] Could not detect appointment modal, but step 2 not active either.")
             return False
 
