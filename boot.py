@@ -165,10 +165,15 @@ def try_booking():
 
         time.sleep(10)
         try:
-            #Detect if "Select a date" step is active (blue circle)
+            # Detect if "Select a date" step is active (blue circle)
             active_step = driver.find_element(By.XPATH, "//a[@id='idopontvalasztas-tab' and contains(@class,'active')]")
             if active_step:
                 print("[SUCCESS] Appointment page opened! 🚀")
+                time.sleep(5)
+                # Save HTML to file
+                with open("appointment_page.html", "w", encoding="utf-8") as f:
+                    f.write(driver.page_source)
+                print("[INFO] Saved page HTML to appointment_page.html")
                 time.sleep(50)  # pause so you can handle appointment manually
                 return True
         except:
@@ -209,3 +214,4 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
