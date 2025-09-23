@@ -103,29 +103,30 @@ def try_booking():
         return False
         
     time.sleep(2)
-    # STEP 2: Select Visa Type C
-    print("[STEP 2] Selecting Visa Type C...")
+    # STEP 2: Select Visa Type D
+    print("[STEP 2] Selecting Visa Type D...")
     try:
         app_type_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Select type of application')]"))
         )
         driver.execute_script("arguments[0].click();", app_type_btn)
         print("[INFO] Opened application type selection modal.")
+        time.sleep(2)
 
-        visa_c_checkbox = wait.until(
-            EC.element_to_be_clickable((By.ID, "b1c126d3-b6f4-4396-9bde-8eef45c7f451"))
+        visa_d_checkbox = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//label[contains(text(),'Visa application (long term; residence permit -D)')]/preceding::input[1]"))
         )
-        driver.execute_script("arguments[0].click();", visa_c_checkbox)
-        print("[INFO] Visa Type C checkbox selected.")
+        driver.execute_script("arguments[0].click();", visa_d_checkbox)
+        print("[INFO] Visa Type D checkbox selected.")
 
         save_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Save')]"))
         )
         driver.execute_script("arguments[0].click();", save_btn)
-        print("[INFO] Saved Visa Type C selection.")
+        print("[INFO] Saved Visa Type D selection.")
 
     except Exception as e:
-        print("[WARNING] Could not select Visa Type C:", e)
+        print("[WARNING] Could not select Visa Type D:", e)
         return False
         
     time.sleep(2)
@@ -232,5 +233,6 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
