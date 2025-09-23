@@ -64,15 +64,19 @@ def notify_telegram(msg):
 # Function: complete booking attempt
 # ---------------------------
 def try_booking():
-
     # STEP 0: Check if IP is blocked
-    try:
-        blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
-        if blocked_msg:
-            print("[ERROR] Your IP is blocked. Stopping script.")
-            return True  # stop loop
-    except:
-        pass
+    if attempt_counter == 1:
+        try:
+            blocked_msg = driver.find_element(
+                By.XPATH,
+                "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]"
+            )
+            if blocked_msg:
+                print("[ERROR] Your IP is blocked.")
+                notify_telegram("⚠️ Your IP is blocked on konzinfobooking.mfa.gov.hu")
+                return True  # stop loop if blocked
+        except:
+            pass
         
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
@@ -228,31 +232,17 @@ def try_booking():
 # ---------------------------
 # Counter for loop iterations
 # ---------------------------
-attempt_counter = 0
 
+attempt_counter = 0
 while True:
     attempt_counter += 1
-
-    # check IP blocked only on first attempt
-    if attempt_counter == 1:
-        try:
-            blocked_msg = driver.find_element(
-                By.XPATH,
-                "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]"
-            )
-            if blocked_msg:
-                print("[ERROR] Your IP is blocked.")
-                notify_telegram("⚠️ Your IP is blocked on konzinfobooking.mfa.gov.hu")
-                break  # stop loop if blocked
-        except:
-            pass
-
-    success = try_booking()  # you can now remove the IP-block check from inside try_booking()
-
+    success = try_booking()
     if success:
         break
     else:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
+
 
