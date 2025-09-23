@@ -1,9 +1,9 @@
 name: Run Booking Bot
 
 on:
-  workflow_dispatch:   # allows manual run
+  workflow_dispatch:   # manual run
   schedule:
-    - cron: '*/30 * * * *'   # run every 30 minutes (adjust as needed)
+    - cron: '*/10 * * * *'   # every 30 minutes
 
 jobs:
   run:
@@ -26,8 +26,24 @@ jobs:
       - name: Install Google Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y wget unzip
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -fy install
 
       - name: Run bot (headless)
         run: |
           python boot.py --headless
+
+      # ✅ Notify in logs if appointment page was saved
+      - name: Notify if appointment page opened
+        if: success() && hashFiles('appointment_page.html') != ''
+        run: echo "🚀 Appointment page opened! The HTML has been saved and uploaded."
+
+      # ✅ Upload the appointment page as an artifact
+      - name: Upload appointment page (if exists)
+        uses: actions/upload-artifact@v4
+        if: success() && hashFiles('appointment_page.html') != ''
+        with:
+          name: appointment-page
+          path: appointment_page.html
+          if-no-files-found: ignore
