@@ -63,16 +63,25 @@ def notify_telegram(msg):
 # ---------------------------
 # Function: complete booking attempt
 # ---------------------------
-def try_booking():
+# ---------------------------
+# Function: complete booking attempt
+# ---------------------------
+def try_booking(first_try=False):
 
-    # STEP 0: Check if IP is blocked
+    # STEP 0: Always check if IP is blocked
     try:
         blocked_msg = driver.find_element(By.XPATH, "//h3[contains(text(),'Your IP') and contains(text(),'blocked')]")
         if blocked_msg:
-            print("[ERROR] Your IP is blocked. Stopping script.")
-            return True  # stop loop
+            print("[ERROR] 🚨 Your IP is blocked.")
+            if first_try:
+                notify_telegram("🚨 ERROR: Your IP has been blocked on konzinfobooking.mfa.gov.hu. Script stopped.")
+            # Save HTML for debugging
+            with open("blocked_page.html", "w", encoding="utf-8") as f:
+                f.write(driver.page_source)
+            return True  # stop loop immediately
     except:
         pass
+
         
     # STEP 1: Select Consulate (Algiers)
     print("[STEP 1] Selecting consulate: Algeria - Algiers...")
@@ -225,14 +234,17 @@ def try_booking():
 # ---------------------------
 # Loop until success
 # ---------------------------
+first_attempt = True
 while True:
-    success = try_booking()
+    success = try_booking(first_try=first_attempt)
     if success:
-        break
+        break  # appointment opened OR IP blocked
     else:
+        first_attempt = False  # after first loop, don’t notify if IP blocked
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
