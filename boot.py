@@ -6,7 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import argparse
-
+import requests
 # ---------------------------
 # Parse arguments (so we can run --headless on GitHub Actions)
 # ---------------------------
@@ -43,6 +43,22 @@ driver.set_window_size(1920, 1080)
 driver.get("https://konzinfobooking.mfa.gov.hu/")
 
 wait = WebDriverWait(driver, 30)
+
+
+# ---------------------------
+# Telegram configuration
+# ---------------------------
+TELEGRAM_TOKEN = "8228033628:AAGa2zmY8S395B8KJ47YjMTX-zGbu7oXMxg"
+CHAT_ID = "1942343377"
+
+def notify_telegram(msg):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    data = {"chat_id": CHAT_ID, "text": msg}
+    try:
+        requests.post(url, data=data)
+        print("[INFO] Telegram notification sent.")
+    except Exception as e:
+        print("[ERROR] Could not send Telegram notification:", e)
 
 # ---------------------------
 # Function: complete booking attempt
@@ -169,6 +185,8 @@ def try_booking():
             active_step = driver.find_element(By.XPATH, "//a[@id='idopontvalasztas-tab' and contains(@class,'active')]")
             if active_step:
                 print("[SUCCESS] Appointment page opened! 🚀")
+                # Send Telegram notification
+                notify_telegram("🚀 Appointment page opened! Check GitHub artifact for the HTML.")
                 time.sleep(5)
                 # Save HTML to file
                 with open("appointment_page.html", "w", encoding="utf-8") as f:
@@ -214,4 +232,5 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
