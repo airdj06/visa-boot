@@ -74,11 +74,9 @@ def try_booking(first_try=False):
         if blocked_msg:
             print("[ERROR] 🚨 Your IP is blocked.")
             if first_try:
+                # Notify only if blocked on first attempt
                 notify_telegram("🚨 ERROR: Your IP has been blocked on konzinfobooking.mfa.gov.hu. Script stopped.")
-            # Save HTML for debugging
-            with open("blocked_page.html", "w", encoding="utf-8") as f:
-                f.write(driver.page_source)
-            return True  # stop loop immediately
+            return "blocked"
     except:
         pass
 
@@ -236,14 +234,21 @@ def try_booking(first_try=False):
 # ---------------------------
 first_attempt = True
 while True:
-    success = try_booking(first_try=first_attempt)
-    if success:
-        break  # appointment opened OR IP blocked
+    result = try_booking(first_try=first_attempt)
+
+    if result == "success":
+        break  # Appointment page opened ✅
+
+    elif result == "blocked":
+        break  # IP blocked → notify only if first attempt
+
     else:
-        first_attempt = False  # after first loop, don’t notify if IP blocked
+        # retry
+        first_attempt = False
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
