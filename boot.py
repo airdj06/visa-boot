@@ -201,7 +201,7 @@ def try_booking(first_try=False):
                     f.write(driver.page_source)
                 print("[INFO] Saved page HTML to appointment_page.html")
                 time.sleep(50)  # pause so you can handle appointment manually
-                return True
+                return "success"
         except:
             pass
 
@@ -248,6 +248,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
