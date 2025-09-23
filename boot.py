@@ -63,8 +63,12 @@ def notify_telegram(msg):
 # ---------------------------
 # Function: complete booking attempt
 # ---------------------------
+attempt_counter = 0
+
 def try_booking():
     # STEP 0: Check if IP is blocked
+    global attempt_counter
+    
     if attempt_counter == 1:
         try:
             blocked_msg = driver.find_element(
@@ -233,7 +237,6 @@ def try_booking():
 # Counter for loop iterations
 # ---------------------------
 
-attempt_counter = 0
 while True:
     attempt_counter += 1
     success = try_booking()
@@ -243,6 +246,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
