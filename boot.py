@@ -102,19 +102,11 @@ def try_booking():
         driver.execute_script("arguments[0].click();", algiers_option)
         print("[INFO] Selected: Algeria - Algiers")
 
-        try:
-            close_btn = driver.find_element(By.XPATH, "//button[contains(text(),'Close') or contains(text(),'×')]")
-            driver.execute_script("arguments[0].click();", close_btn)
-            print("[INFO] Closed consulate selection modal.")
-        except:
-            print("[INFO] No Close button found, continuing...")
-
     except Exception as e:
         print("[ERROR] Could not select consulate:", e)
         return False
         
     time.sleep(2)
-
     # STEP 2: Select Visa Type C
     print("[STEP 2] Selecting Visa Type C...")
     try:
@@ -258,6 +250,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
