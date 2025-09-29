@@ -98,6 +98,7 @@ def try_booking():
         algiers_option = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//label[contains(text(),'Algeria - Algiers')]"))
         )
+        time.sleep(1)
         driver.execute_script("arguments[0].click();", algiers_option)
         print("[INFO] Selected: Algeria - Algiers")
 
@@ -127,12 +128,14 @@ def try_booking():
         visa_c_checkbox = wait.until(
             EC.element_to_be_clickable((By.ID, "b1c126d3-b6f4-4396-9bde-8eef45c7f451"))
         )
+        time.sleep(1)
         driver.execute_script("arguments[0].click();", visa_c_checkbox)
         print("[INFO] Visa Type C checkbox selected.")
 
         save_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Save')]"))
         )
+        time.sleep(1)
         driver.execute_script("arguments[0].click();", save_btn)
         print("[INFO] Saved Visa Type C selection.")
 
@@ -153,14 +156,17 @@ def try_booking():
         dob_input.clear()
         dob_input.send_keys(USER_DATA["dob"])
 
+        time.sleep(1)
         phone_input = wait.until(EC.presence_of_element_located((By.ID, "label9")))
         phone_input.clear()
         phone_input.send_keys(USER_DATA["phone"])
 
+        time.sleep(1)
         email_input = wait.until(EC.presence_of_element_located((By.ID, "label10")))
         email_input.clear()
         email_input.send_keys(USER_DATA["email"])
 
+        time.sleep(1)
         email2_input = wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[contains(text(),'Re-enter the email address')]/following::input[1]")
@@ -169,6 +175,7 @@ def try_booking():
         email2_input.clear()
         email2_input.send_keys(USER_DATA["email"])
 
+        time.sleep(1)
         passport_input = wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[contains(text(),'Passport number')]/following::input[1]")
@@ -178,9 +185,11 @@ def try_booking():
         passport_input.send_keys(USER_DATA["passport"])
         driver.execute_script("arguments[0].blur();", passport_input)
 
+        time.sleep(1)
         consent1 = wait.until(EC.element_to_be_clickable((By.ID, "slabel13")))
         driver.execute_script("arguments[0].click();", consent1)
 
+        time.sleep(1)
         consent2 = wait.until(EC.element_to_be_clickable((By.ID, "label13")))
         driver.execute_script("arguments[0].click();", consent2)
 
@@ -249,6 +258,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
