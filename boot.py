@@ -78,7 +78,7 @@ def try_booking():
             # Always print
             print("[ERROR] Your IP is blocked.")
             # Only notify Telegram on first attempt
-            if attempt_counter == 2:
+            if attempt_counter <= 2:
                 notify_telegram("⚠️ Your IP is blocked on konzinfobooking.mfa.gov.hu")
             return True  # stop loop if blocked
     except:
@@ -250,6 +250,7 @@ while True:
         time.sleep(5)
         driver.refresh()
         print("[INFO] Page refreshed, retrying...")
+
 
 
 
